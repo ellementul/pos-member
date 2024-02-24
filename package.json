@@ -1,0 +1,27 @@
+{
+  "name": "@ellementul/uee-member",
+  "version": "2.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "ava"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ellementul/UEETimeTicker.git"
+  },
+  "author": "Ellementul",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ellementul/UEETimeTicker/issues"
+  },
+  "homepage": "https://github.com/ellementul/UEETimeTicker#readme",
+  "dependencies": {
+    "@ellementul/united-events-environment": "^2.0.3"
+  },
+  "devDependencies": {
+    "ava": "^6.1.1",
+    "sinon": "^17.0.1"
+  }
+}
