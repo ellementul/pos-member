@@ -1,8 +1,8 @@
 import { EventFactory, Types } from '@ellementul/united-events-environment'
-// Defined a type of event what you want to listen  
+
 const type = Types.Object.Def({
-  system: "TheOutsideSystem",
-  entity: "TheOutsideEntity",
-  action: "Start"
-})
+  system: "POS",
+  entity: "Changed Nodes"
+}, true)
+
 export default EventFactory(type)

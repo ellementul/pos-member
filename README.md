@@ -1,26 +1,14 @@
-# UEE Member Template
+# POS Member
+Member manages one Partically Order Set
 
-## Description
-It is a template to create a new member class.
+## Events
+### Input
++ Create Node
++ Create Relation
++ Create Property
++ Update Property for Current Node
++ Delete Realtion
++ Delete Node
 
-## Dir structure
-```
-├── index.js # entrypoint of your module
-├── index.test.js # tests for your module
-└── events
-    ├── outside_event.js # your member listens to this event
-    └── your_event.js    # your member triggers this event
-```
 
-## Commands
-### Install dependencies:
-```bash
-$ npm i
-```
-#### Run tests:
-```bash
-$ npm test
-```
-
-All files with the template name "*.test.js" will be run.
 

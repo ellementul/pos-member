@@ -1,11 +1,12 @@
 {
-  "name": "@ellementul/uee-member",
-  "version": "2.0.0",
+  "name": "@ellementul/pos-member",
+  "version": "0.1.0",
   "description": "",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "ava"
+    "test": "clear && ava",
+    "test:w": "ava --watch"
   },
   "repository": {
     "type": "git",
