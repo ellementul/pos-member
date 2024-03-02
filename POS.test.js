@@ -104,3 +104,35 @@ test("Delete Node", t => {
 
   t.falsy(pos.get(parentUuid))
 })
+
+test("Get All Parents", t => {
+  const pos = new POS
+
+  const parents = [pos.addNode(), pos.addNode()]
+  const childs = [pos.addNode({ parents }), pos.addNode({ parents }), pos.addNode({ parents })]
+  const youngest = pos.addNode({ parents: childs })
+
+  t.deepEqual(pos.getAllParents(youngest), [...childs, ...parents])
+})
+
+test("Get All Children", t => {
+  const pos = new POS
+
+  const parents = [pos.addNode(), pos.addNode()]
+  const childs = [pos.addNode({ parents }), pos.addNode({ parents }), pos.addNode({ parents })]
+  const youngest = pos.addNode({ parents: childs })
+
+  t.deepEqual(pos.getAllChildren(parents[0]), [...childs, youngest])
+})
+
+test("Try to create Loop", t => {
+  const pos = new POS
+
+  const parentUuid = pos.addNode()
+  const childUuid = pos.addNode()
+  pos.addRelation({ parent: parentUuid, child: childUuid })
+  t.throws(
+    () => pos.addRelation({ parent: childUuid, child: parentUuid }),
+    { message: "I cannot create this relation, it will make loop!" }
+  )
+})

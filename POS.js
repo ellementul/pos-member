@@ -23,6 +23,52 @@ export class POS {
     }
   }
 
+  getAllParents(uuid, toArray=true) {
+    if(!this.nodes.has(uuid))
+      return toArray ? [] : new Set
+
+    let parentsToCheck = new Set(this.nodes.get(uuid).parents)
+    let checkedParents = new Set
+
+    while (parentsToCheck.size > 0) {
+
+      const [currentParent] = parentsToCheck
+
+      for (const newParentToCheck of this.nodes.get(currentParent).parents) {
+        if(!checkedParents.has(newParentToCheck))
+          parentsToCheck.add(newParentToCheck)
+      }
+
+      parentsToCheck.delete(currentParent)
+      checkedParents.add(currentParent)
+    }
+
+    return toArray ? [...checkedParents] : checkedParents
+  }
+
+  getAllChildren(uuid, toArray=true) {
+    if(!this.nodes.has(uuid))
+      return toArray ? [] : new Set
+
+    let childrenToCheck = new Set(this.nodes.get(uuid).children)
+    let checkedChildren = new Set
+
+    while (childrenToCheck.size > 0) {
+
+      const [currentChild] = childrenToCheck
+
+      for (const newChildToCheck of this.nodes.get(currentChild).children) {
+        if(!checkedChildren.has(newChildToCheck))
+          childrenToCheck.add(newChildToCheck)
+      }
+
+      childrenToCheck.delete(currentChild)
+      checkedChildren.add(currentChild)
+    }
+
+    return toArray ? [...checkedChildren] : checkedChildren
+  }
+
   addNode({ userdata = {}, parents = [], children = [] } = {}) {
     const uuid = randomUUID()
 
@@ -61,6 +107,12 @@ export class POS {
   }
 
   addRelation ({ parent, child }) {
+    if(parent == child)
+      return
+
+    if(this.getAllParents(parent, false).has(child))
+      throw new Error("I cannot create this relation, it will make loop!")
+
     const parentNode = this.nodes.get(parent)
     const childNode = this.nodes.get(child)
 

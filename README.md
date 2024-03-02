@@ -2,6 +2,8 @@
 Member manages one Partically Order Set
 
 ## Events
+### Output
+Changed Nodes
 ### Input
 + Create Node
 + Create Relation

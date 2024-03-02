@@ -1,23 +1,26 @@
 import { Member, events } from '@ellementul/united-events-environment'
 const { openEvent } = events
 
-import showEvent from './events/changed.js'
+import changedEvent from './events/changed.js'
+import createEvent from './events/create.js'
+
 class POSMember extends Member {
   constructor() {
     super()
 
-    this.onEvent(openEvent, () => this.show())
+    this.onEvent(createEvent, () => this.changed())
     this.role = "POS"
   }
 
-  show () {
-    this.send(showEvent, {
-      state: {}
-    })
+  changed () {
+    this.send(changedEvent, {})
   }
 }
 
-const exportEvents = { show: showEvent }
+const exportEvents = {
+  create: createEvent,
+  changed: changedEvent 
+}
 
 export {
   POSMember,

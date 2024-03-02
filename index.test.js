@@ -4,28 +4,22 @@ import sinon from 'sinon'
 import { Provider } from '@ellementul/united-events-environment'
 import { POSMember } from './index.js'
 
-import showEvent from './events/changed.js'
+import createEvent from './events/create.js'
+import changedEvent from './events/changed.js'
 
 test('constructor of Member', t => {
   const member = new POSMember
   t.truthy(member)
 })
 
-// test('trigger event of YourMember', t => {
-
-//   // Member connect to test provider
-//   const provider = new Provider
-//   const yourMember = new YourMember
-//   yourMember.setProvider(provider)
-
-//   // Subscribe to testing event
+test('Create, Get and Delete Node', t => {
+  const provider = new Provider
+  const member = new POSMember
+  member.setProvider(provider)
   
-//   const yourEventCallback = sinon.fake()
-//   provider.onEvent(yourEvent, yourEventCallback)
+  const yourEventCallback = sinon.fake()
+  provider.onEvent(changedEvent, yourEventCallback)
 
-//   // Run the event to has to run the testing event
-//   provider.sendEvent(outsideEvent.create())
-
-//   // Check calling of the testing event
-//   t.truthy(yourEventCallback.calledOnce);
-// });
+  provider.sendEvent(createEvent.create())
+  t.truthy(yourEventCallback.calledOnce)
+});
