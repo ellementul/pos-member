@@ -17,9 +17,7 @@ export class POS {
       uuid,
       userdata,
       parents: Array.from(parents),
-      children: Array.from(children),
-      isEldest: this.eldestes.has(uuid),
-      isYoungest: this.youngestes.has(uuid)
+      children: Array.from(children)
     }
   }
 

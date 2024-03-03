@@ -21,9 +21,7 @@ test("Add and Get node", t => {
     uuid: parentUuid,
     userdata,
     parents: [],
-    children: [],
-    isEldest: true,
-    isYoungest: true
+    children: []
   })
 
   const childUuid = pos.addNode({ parents: [parentUuid] })
@@ -33,18 +31,14 @@ test("Add and Get node", t => {
     uuid: parentUuid,
     userdata,
     parents: [],
-    children: [childUuid],
-    isEldest: true,
-    isYoungest: false
+    children: [childUuid]
   })
 
   t.deepEqual(pos.get(childUuid), {
     uuid: childUuid,
     userdata: {},
     parents: [parentUuid],
-    children: [],
-    isEldest: false,
-    isYoungest: true
+    children: []
   })
 
 })
@@ -59,30 +53,22 @@ test("Add and Delete Realtion", t => {
 
   t.like(pos.get(parentUuid), {
     parents: [],
-    children: [childUuid],
-    isEldest: true,
-    isYoungest: false
+    children: [childUuid]
   })
 
   t.like(pos.get(childUuid), {
     parents: [parentUuid],
-    children: [],
-    isEldest: false,
-    isYoungest: true
+    children: []
   })
 
   pos.deleteRelation({ parent: parentUuid, child: childUuid })
 
   t.like(pos.get(parentUuid), {
-    children: [],
-    isEldest: true,
-    isYoungest: true
+    children: []
   })
 
   t.like(pos.get(childUuid), {
-    parents: [],
-    isEldest: true,
-    isYoungest: true
+    parents: []
   })
 
 })
@@ -97,9 +83,7 @@ test("Delete Node", t => {
   pos.deleteNode(parentUuid)
 
   t.like(pos.get(childUuid), {
-    parents: [],
-    isEldest: true,
-    isYoungest: true
+    parents: []
   })
 
   t.falsy(pos.get(parentUuid))

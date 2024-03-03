@@ -17,9 +17,38 @@ test('Create, Get and Delete Node', t => {
   const member = new POSMember
   member.setProvider(provider)
   
-  const yourEventCallback = sinon.fake()
-  provider.onEvent(changedEvent, yourEventCallback)
+  const changedCallback = sinon.fake()
+  provider.onEvent(changedEvent, changedCallback)
 
-  provider.sendEvent(createEvent.create())
-  t.truthy(yourEventCallback.calledOnce)
+  //Create eldest node
+  provider.sendEvent({
+    ...createEvent.create(),
+    state: {
+      parents: [],
+      children: []
+    }
+  })
+  t.truthy(changedCallback.calledOnce)
+  t.is(changedCallback.firstArg.state.length, 1)
+
+  const parentNode = changedCallback.firstArg.state[0]
+  t.deepEqual(parentNode.userdata, {})
+
+  //Create child
+  provider.sendEvent({
+    ...createEvent.create(),
+    state: {
+      userdata: { data: "TestingData" },
+      parents: [parentNode.uuid],
+      children: []
+    }
+  })
+  t.is(changedCallback.firstArg.state.length, 1)
+  const childNode = changedCallback.firstArg.state[0]
+  t.not(parentNode.uuid, childNode.uuid)
+  t.is(parentNode.uuid, childNode.parents[0])
+
+  t.deepEqual(childNode.userdata, { data: "TestingData" })
+
+  //Delete eldest node
 });
