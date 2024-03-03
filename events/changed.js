@@ -12,7 +12,8 @@ const nodeType = Types.Object.Def({
 const type = Types.Object.Def({
   system: "POS",
   entity: "Changed Nodes",
-  state: Types.Array.Def(nodeType, 1024, false)
+  state: Types.Array.Def(nodeType, 1024, true),
+  removed: uuidsListType
 })
 
 export default EventFactory(type)

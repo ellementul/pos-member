@@ -1,8 +1,10 @@
 import { Member, events } from '@ellementul/united-events-environment'
 import { POS } from './POS.js'
 
-import changedEvent from './events/changed.js'
 import createEvent from './events/create.js'
+import changedEvent from './events/changed.js'
+import deleteEvent from './events/delete.js'
+
 
 class POSMember extends Member {
   constructor() {
@@ -11,6 +13,7 @@ class POSMember extends Member {
     this.pos = new POS
 
     this.onEvent(createEvent, ({ state }) => this.create(state))
+    this.onEvent(deleteEvent, ({ state }) => this.delete(state))
     this.role = "POS"
   }
 
@@ -23,9 +26,15 @@ class POSMember extends Member {
     }
   }
 
-  changed (uuids) {
+  delete(uuid) {
+    this.pos.deleteNode(uuid)
+    this.changed([], [uuid])
+  }
+
+  changed (uuids, removedUuids = []) {
     this.send(changedEvent, {
-      state: uuids.map(uuid =>  this.pos.get(uuid))
+      state: uuids.map(uuid =>  this.pos.get(uuid)),
+      removed: removedUuids
     })
   }
 }

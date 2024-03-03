@@ -6,6 +6,7 @@ import { POSMember } from './index.js'
 
 import createEvent from './events/create.js'
 import changedEvent from './events/changed.js'
+import deleteEvent from './events/delete.js'
 
 test('constructor of Member', t => {
   const member = new POSMember
@@ -51,4 +52,10 @@ test('Create, Get and Delete Node', t => {
   t.deepEqual(childNode.userdata, { data: "TestingData" })
 
   //Delete eldest node
+  provider.sendEvent({
+    ...deleteEvent.create(),
+    state: parentNode.uuid
+  })
+  t.is(changedCallback.firstArg.removed.length, 1)
+  t.is(changedCallback.firstArg.removed[0], parentNode.uuid)
 });
