@@ -11,31 +11,30 @@ export class POS {
     if(!this.points.has(uuid))
       return null
 
-    const { userdata, linesAbove, linesBelow } = this.points.get(uuid)
+    const point = this.points.get(uuid)
     return {
       uuid,
-      userdata,
-      linesBelow: Array.from(linesBelow),
-      linesAbove: Array.from(linesAbove)
+      userdata: point.userdata,
+      linesBelow: Array.from(point.linesBelow),
+      linesAbove: Array.from(point.linesAbove),
+      roots: Array.from(point.roots),
+      leaves: Array.from(point.leaves)
     }
   }
 
   addPoint({ userdata = {}, linesBelow = [], linesAbove = [] } = {}) {
-    const point = new Point(userdata)
+    const getPointByUUID = uuid => this.points.get(uuid) 
+    const point = new Point(getPointByUUID, userdata)
 
     this.points.set(point.uuid, point)
+    this.roots.add(point.uuid)
+    this.leaves.add(point.uuid)
 
     for (const below of linesBelow)
       this.addLine({ below, above: point.uuid })
 
     for (const above of linesAbove)
       this.addLine({ below: point.uuid, above })
-
-    if(point.linesBelow.size === 0)
-      this.roots.add(point.uuid)
-
-    if(point.linesAbove.size === 0)
-      this.leaves.add(point.uuid)
 
     return point.uuid
   }
@@ -59,7 +58,7 @@ export class POS {
     const pointAbove = this.points.get(above)
 
     if(pointBelow.isAboveThen(pointAbove))
-      throw new Error(`I cannot create this line: ${ { below, above } }, it will make loop!`)
+      throw new Error(`I cannot create this line: ` + JSON.stringify({ below, above }) + `it will make loop!`)
 
     pointAbove.addBelowLine(pointBelow)
     pointBelow.addAboveLine(pointAbove)
@@ -77,15 +76,15 @@ export class POS {
     pointAbove.deleteBelowLine(pointBelow)
     pointBelow.deleteAboveLine(pointAbove)
 
-    if(pointAbove.linesBelow.size == 0)
+    if(pointAbove.isRoot)
       this.roots.add(pointAbove.uuid)
 
-    if(pointBelow.linesAbove.size == 0)
+    if(pointBelow.isLeaf)
       this.leaves.add(pointBelow.uuid)
   }
 
   checkLine({ below, above }) {
-    if(below == above)
+    if(below === above)
       throw new Error("Point below can't be the same point that point above!")
 
     if(!this.points.has(below))

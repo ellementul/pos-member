@@ -16,6 +16,8 @@ test("Add Point", t => {
     uuid: pointUuid,
     linesBelow: [],
     linesAbove: [],
+    roots: [],
+    leaves: [],
     userdata: {}
   })
 
@@ -30,13 +32,14 @@ test("Add and Delete Lines", t => {
 
   t.like(pos.get(pointBelowUuid), {
     linesBelow: [],
-    linesAbove: [pointAboveUuid]
+    linesAbove: [pointAboveUuid],
+    leaves: [pointAboveUuid]
   })
 
   t.like(pos.get(pointAboveUuid), {
     linesBelow: [pointBelowUuid],
     linesAbove: [],
-    // roots: [pointBelowUuid]
+    roots: [pointBelowUuid]
   })
 
   pos.deleteLine({ below: pointBelowUuid, above: pointAboveUuid })
@@ -54,83 +57,46 @@ test("Add and Delete Lines", t => {
 test("Add Node with Lines", t => {
   const pos = new POS
 
-  const testingUUid = pos.addPoint()
-  t.truthy(testingUUid)
+  const userdata = { testing: "Data" }
+  const leaves = [ pos.addPoint({ userdata }), pos.addPoint({ userdata }) ]
+  const roots = [ pos.addPoint({ userdata }), pos.addPoint({ userdata }) ]
+  const middlePoints = [ pos.addPoint({ userdata, linesAbove: leaves, linesBelow: roots }), pos.addPoint({ userdata, linesAbove: leaves, linesBelow: roots }) ]
+  
 
-  const userdata = { testingUUid }
-  const pointBelowUuid = pos.addPoint({ userdata })
-  t.truthy(pointBelowUuid)
-
-  t.deepEqual(pos.get(pointBelowUuid), {
-    uuid: pointBelowUuid,
+  t.deepEqual(pos.get(middlePoints[0]), {
+    uuid: middlePoints[0],
     userdata,
-    linesBelow: [],
-    linesAbove: []
+    linesBelow: roots,
+    linesAbove: leaves,
+    leaves,
+    roots
   })
-
-  const pointAboveUuid = pos.addPoint({ linesBelow: [pointBelowUuid] })
-  t.truthy(pointAboveUuid)
-
-  t.deepEqual(pos.get(pointBelowUuid), {
-    uuid: pointBelowUuid,
-    userdata,
-    linesBelow: [],
-    linesAbove: [pointAboveUuid]
-  })
-
-  t.deepEqual(pos.get(pointAboveUuid), {
-    uuid: pointAboveUuid,
-    userdata: {},
-    linesBelow: [pointBelowUuid],
-    linesAbove: []
-  })
-
 })
 
-// test("Delete Node", t => {
-//   const pos = new POS
+test("Delete Node", t => {
+  const pos = new POS
 
-//   const pointBelowUuid = pos.addPoint()
-//   const pointAboveUuid = pos.addPoint()
-//   pos.addLine({ pointBelow: pointBelowUuid, pointAbove: pointAboveUuid })
+  const pointBelowUuid = pos.addPoint()
+  const pointAboveUuid = pos.addPoint()
+  pos.addLine({ below: pointBelowUuid, above: pointAboveUuid })
 
-//   pos.deletePoint(pointBelowUuid)
+  pos.deletePoint(pointBelowUuid)
 
-//   t.like(pos.get(pointAboveUuid), {
-//     linesBelow: []
-//   })
+  t.like(pos.get(pointAboveUuid), {
+    linesBelow: []
+  })
 
-//   t.falsy(pos.get(pointBelowUuid))
-// })
+  t.falsy(pos.get(pointBelowUuid))
+})
 
-// test("Get All linesBelow", t => {
-//   const pos = new POS
+test("Try to create Loop", t => {
+  const pos = new POS
 
-//   const linesBelow = [pos.addPoint(), pos.addPoint()]
-//   const linesAbove = [pos.addPoint({ linesBelow }), pos.addPoint({ linesBelow }), pos.addPoint({ linesBelow })]
-//   const leaf = pos.addPoint({ linesBelow: linesAbove })
-
-//   t.deepEqual(pos.getAllPointsBelow(leaf), [...linesAbove, ...linesBelow])
-// })
-
-// test("Get All linesAbove", t => {
-//   const pos = new POS
-
-//   const linesBelow = [pos.addPoint(), pos.addPoint()]
-//   const linesAbove = [pos.addPoint({ linesBelow }), pos.addPoint({ linesBelow }), pos.addPoint({ linesBelow })]
-//   const leaf = pos.addPoint({ linesBelow: linesAbove })
-
-//   t.deepEqual(pos.getAllPointsAbove(linesBelow[0]), [...linesAbove, leaf])
-// })
-
-// test("Try to create Loop", t => {
-//   const pos = new POS
-
-//   const pointBelowUuid = pos.addPoint()
-//   const pointAboveUuid = pos.addPoint()
-//   pos.addLine({ below: pointBelowUuid, above: pointAboveUuid })
-//   t.throws(
-//     () => pos.addLine({ below: pointAboveUuid, above: pointBelowUuid }),
-//     { message: "I cannot create this relation, it will make loop!" }
-//   )
-// })
+  const pointBelowUuid = pos.addPoint()
+  const pointAboveUuid = pos.addPoint()
+  pos.addLine({ below: pointBelowUuid, above: pointAboveUuid })
+  t.throws(
+    () => pos.addLine({ below: pointAboveUuid, above: pointBelowUuid }),
+    { message: `I cannot create this line: ` + JSON.stringify({ below: pointAboveUuid, above: pointBelowUuid }) + `it will make loop!` }
+  )
+})
