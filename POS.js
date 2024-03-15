@@ -1,5 +1,4 @@
-import { Types } from '@ellementul/united-events-environment'
-const randomUUID = Types.UUID.Def().rand
+import { Point } from './point.js'
 
 export class POS {
   constructor () {
@@ -12,132 +11,90 @@ export class POS {
     if(!this.points.has(uuid))
       return null
 
-    const { userdata, pointsAbove, pointsBelow } = this.points.get(uuid)
+    const { userdata, linesAbove, linesBelow } = this.points.get(uuid)
     return {
       uuid,
       userdata,
-      pointsBelow: Array.from(pointsBelow),
-      pointsAbove: Array.from(pointsAbove)
+      linesBelow: Array.from(linesBelow),
+      linesAbove: Array.from(linesAbove)
     }
   }
 
-  getAllPointsBelow(uuid, toArray=true) {
-    return this.getAllPointsByDirect(uuid, "pointsBelow", toArray)
-  }
+  addPoint({ userdata = {}, linesBelow = [], linesAbove = [] } = {}) {
+    const point = new Point(userdata)
 
-  getAllPointsAbove(uuid, toArray=true) {
-    return this.getAllPointsByDirect(uuid, "pointsAbove", toArray)
-  }
+    this.points.set(point.uuid, point)
 
-  getAllPointsByDirect(uuid, direct, toArray) {
-    if(!this.points.has(uuid))
-      return toArray ? [] : new Set
+    for (const below of linesBelow)
+      this.addLine({ below, above: point.uuid })
 
-    let pointsToCheck = new Set(this.points.get(uuid)[direct])
-    let checkedPoints = new Set
+    for (const above of linesAbove)
+      this.addLine({ below: point.uuid, above })
 
-    while (pointsToCheck.size > 0) {
+    if(point.linesBelow.size === 0)
+      this.roots.add(point.uuid)
 
-      const [currentPoint] = pointsToCheck
+    if(point.linesAbove.size === 0)
+      this.leaves.add(point.uuid)
 
-      for (const newPointToCheck of this.points.get(currentPoint)[direct]) {
-        if(!checkedPoints.has(newPointToCheck))
-          pointsToCheck.add(newPointToCheck)
-      }
-
-      pointsToCheck.delete(currentPoint)
-      checkedPoints.add(currentPoint)
-    }
-
-    return toArray ? [...checkedPoints] : checkedPoints
-  }
-
-  addPoint({ userdata = {}, pointsBelow = [], pointsAbove = [] } = {}) {
-    const uuid = randomUUID()
-
-    this.points.set(uuid, {
-      uuid,
-      userdata,
-      pointsBelow: new Set(),
-      pointsAbove: new Set()
-    })
-
-    for (const below of pointsBelow)
-      this.addLine({ below, above: uuid })
-
-    for (const above of pointsAbove)
-      this.addLine({ below: uuid, above })
-
-    if(this.points.get(uuid).pointsBelow.size === 0)
-      this.roots.add(uuid)
-
-    if(this.points.get(uuid).pointsAbove.size === 0)
-      this.leaves.add(uuid)
-
-    return uuid
+    return point.uuid
   }
 
   deletePoint(uuid) {
     const point = this.points.get(uuid)
 
-    for (const below of point.pointsBelow)
+    for (const below of point.linesBelow)
       this.deleteLine({ below, above: uuid })
 
-    for (const above of point.pointsAbove)
+    for (const above of point.linesAbove)
       this.deleteLine({ below: uuid, above })
 
     this.points.delete(uuid)
   }
 
   addLine({ below, above }) {
-    if(below == above)
-      return
-
-    if(this.getAllPointsBelow(below, false).has(above))
-      throw new Error("I cannot create this relation, it will make loop!")
+    this.checkLine({ below, above })
 
     const pointBelow = this.points.get(below)
     const pointAbove = this.points.get(above)
 
-    this.addBelowLine(pointAbove, below)
-    this.addAboveLine(pointBelow, above)
-  }
+    if(pointBelow.isAboveThen(pointAbove))
+      throw new Error(`I cannot create this line: ${ { below, above } }, it will make loop!`)
 
-  addBelowLine(point, pointBelow) {
-    if(!this.points.has(pointBelow))
-      throw new Error(`Point below with ${pointBelow} uuid isn't in POS!`)
+    pointAbove.addBelowLine(pointBelow)
+    pointBelow.addAboveLine(pointAbove)
 
-    point.pointsBelow.add(pointBelow)
-    this.roots.delete(point.uuid)
-  }
-
-  addAboveLine(point, pointAbove) {
-    if(!this.points.has(pointAbove))
-      throw new Error(`Point above with ${pointAbove} uuid isn't in POS!`)
-
-    point.pointsAbove.add(pointAbove)
-    this.leaves.delete(point.uuid)
+    this.roots.delete(pointAbove.uuid)
+    this.leaves.delete(pointBelow.uuid)
   }
 
   deleteLine ({ below, above }) {
-    const pointBelowNode = this.points.get(below)
-    const pointAboveNode = this.points.get(above)
+    this.checkLine({ below, above })
 
-    this.deleteBelowLine(pointAboveNode, below)
-    this.deleteAboveLine(pointBelowNode, above)
+    const pointBelow = this.points.get(below)
+    const pointAbove = this.points.get(above)
+
+    pointAbove.deleteBelowLine(pointBelow)
+    pointBelow.deleteAboveLine(pointAbove)
+
+    if(pointAbove.linesBelow.size == 0)
+      this.roots.add(pointAbove.uuid)
+
+    if(pointBelow.linesAbove.size == 0)
+      this.leaves.add(pointBelow.uuid)
   }
 
-  deleteBelowLine(point, pointBelow) {
-    point.pointsBelow.delete(pointBelow)
+  checkLine({ below, above }) {
+    if(below == above)
+      throw new Error("Point below can't be the same point that point above!")
 
-    if(point.pointsBelow.size == 0)
-      this.roots.add(point.uuid)
-  }
+    if(!this.points.has(below))
+      throw new Error(`Point below with ${below} uuid isn't in POS!`)
 
-  deleteAboveLine(point, pointAbove) {
-    point.pointsAbove.delete(pointAbove)
+    if(!this.points.has(above))
+      throw new Error(`Point above with ${above} uuid isn't in POS!`)
 
-    if(point.pointsAbove.size == 0)
-      this.leaves.add(point.uuid)
+    return
   }
 }
+

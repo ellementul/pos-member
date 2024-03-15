@@ -1,16 +1,24 @@
 # POS Member
 Member manages one Partically Order Set
 
+
+- Leaves
+- Roots
+- Points Above
+- Points Below
+- All Points Above
+- All Points Below
+
 ## Events
 ### Output
-Changed Nodes
+Changed Points
 ### Input
-+ Create Node
-+ Create Relation
++ Create Point
++ Create Line
 + Create Property
-+ Update Property for Current Node
-+ Delete Realtion
-+ Delete Node
++ Update Property for Current Point
++ Delete Line
++ Delete Point
 
 
 
