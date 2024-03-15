@@ -10,35 +10,35 @@ test("Constructor", t => {
 test("Add and Get node", t => {
   const pos = new POS
 
-  const testingUUid = pos.addNode()
+  const testingUUid = pos.addPoint()
   t.truthy(testingUUid)
 
   const userdata = { testingUUid }
-  const parentUuid = pos.addNode({ userdata })
-  t.truthy(parentUuid)
+  const pointBelowUuid = pos.addPoint({ userdata })
+  t.truthy(pointBelowUuid)
 
-  t.deepEqual(pos.get(parentUuid), {
-    uuid: parentUuid,
+  t.deepEqual(pos.get(pointBelowUuid), {
+    uuid: pointBelowUuid,
     userdata,
-    parents: [],
-    children: []
+    pointsBelow: [],
+    pointsAbove: []
   })
 
-  const childUuid = pos.addNode({ parents: [parentUuid] })
-  t.truthy(childUuid)
+  const pointAboveUuid = pos.addPoint({ pointsBelow: [pointBelowUuid] })
+  t.truthy(pointAboveUuid)
 
-  t.deepEqual(pos.get(parentUuid), {
-    uuid: parentUuid,
+  t.deepEqual(pos.get(pointBelowUuid), {
+    uuid: pointBelowUuid,
     userdata,
-    parents: [],
-    children: [childUuid]
+    pointsBelow: [],
+    pointsAbove: [pointAboveUuid]
   })
 
-  t.deepEqual(pos.get(childUuid), {
-    uuid: childUuid,
+  t.deepEqual(pos.get(pointAboveUuid), {
+    uuid: pointAboveUuid,
     userdata: {},
-    parents: [parentUuid],
-    children: []
+    pointsBelow: [pointBelowUuid],
+    pointsAbove: []
   })
 
 })
@@ -47,28 +47,28 @@ test("Add and Get node", t => {
 test("Add and Delete Realtion", t => {
   const pos = new POS
 
-  const parentUuid = pos.addNode()
-  const childUuid = pos.addNode()
-  pos.addRelation({ parent: parentUuid, child: childUuid })
+  const pointBelowUuid = pos.addPoint()
+  const pointAboveUuid = pos.addPoint()
+  pos.addLine({ below: pointBelowUuid, above: pointAboveUuid })
 
-  t.like(pos.get(parentUuid), {
-    parents: [],
-    children: [childUuid]
+  t.like(pos.get(pointBelowUuid), {
+    pointsBelow: [],
+    pointsAbove: [pointAboveUuid]
   })
 
-  t.like(pos.get(childUuid), {
-    parents: [parentUuid],
-    children: []
+  t.like(pos.get(pointAboveUuid), {
+    pointsBelow: [pointBelowUuid],
+    pointsAbove: []
   })
 
-  pos.deleteRelation({ parent: parentUuid, child: childUuid })
+  pos.deleteLine({ below: pointBelowUuid, above: pointAboveUuid })
 
-  t.like(pos.get(parentUuid), {
-    children: []
+  t.like(pos.get(pointBelowUuid), {
+    pointsAbove: []
   })
 
-  t.like(pos.get(childUuid), {
-    parents: []
+  t.like(pos.get(pointAboveUuid), {
+    pointsBelow: []
   })
 
 })
@@ -76,47 +76,47 @@ test("Add and Delete Realtion", t => {
 test("Delete Node", t => {
   const pos = new POS
 
-  const parentUuid = pos.addNode()
-  const childUuid = pos.addNode()
-  pos.addRelation({ parent: parentUuid, child: childUuid })
+  const pointBelowUuid = pos.addPoint()
+  const pointAboveUuid = pos.addPoint()
+  pos.addLine({ pointBelow: pointBelowUuid, pointAbove: pointAboveUuid })
 
-  pos.deleteNode(parentUuid)
+  pos.deletePoint(pointBelowUuid)
 
-  t.like(pos.get(childUuid), {
-    parents: []
+  t.like(pos.get(pointAboveUuid), {
+    pointsBelow: []
   })
 
-  t.falsy(pos.get(parentUuid))
+  t.falsy(pos.get(pointBelowUuid))
 })
 
-test("Get All Parents", t => {
+test("Get All pointsBelow", t => {
   const pos = new POS
 
-  const parents = [pos.addNode(), pos.addNode()]
-  const childs = [pos.addNode({ parents }), pos.addNode({ parents }), pos.addNode({ parents })]
-  const youngest = pos.addNode({ parents: childs })
+  const pointsBelow = [pos.addPoint(), pos.addPoint()]
+  const pointsAbove = [pos.addPoint({ pointsBelow }), pos.addPoint({ pointsBelow }), pos.addPoint({ pointsBelow })]
+  const leaf = pos.addPoint({ pointsBelow: pointsAbove })
 
-  t.deepEqual(pos.getAllParents(youngest), [...childs, ...parents])
+  t.deepEqual(pos.getAllPointsBelow(leaf), [...pointsAbove, ...pointsBelow])
 })
 
-test("Get All Children", t => {
+test("Get All pointsAbove", t => {
   const pos = new POS
 
-  const parents = [pos.addNode(), pos.addNode()]
-  const childs = [pos.addNode({ parents }), pos.addNode({ parents }), pos.addNode({ parents })]
-  const youngest = pos.addNode({ parents: childs })
+  const pointsBelow = [pos.addPoint(), pos.addPoint()]
+  const pointsAbove = [pos.addPoint({ pointsBelow }), pos.addPoint({ pointsBelow }), pos.addPoint({ pointsBelow })]
+  const leaf = pos.addPoint({ pointsBelow: pointsAbove })
 
-  t.deepEqual(pos.getAllChildren(parents[0]), [...childs, youngest])
+  t.deepEqual(pos.getAllPointsAbove(pointsBelow[0]), [...pointsAbove, leaf])
 })
 
 test("Try to create Loop", t => {
   const pos = new POS
 
-  const parentUuid = pos.addNode()
-  const childUuid = pos.addNode()
-  pos.addRelation({ parent: parentUuid, child: childUuid })
+  const pointBelowUuid = pos.addPoint()
+  const pointAboveUuid = pos.addPoint()
+  pos.addLine({ below: pointBelowUuid, above: pointAboveUuid })
   t.throws(
-    () => pos.addRelation({ parent: childUuid, child: parentUuid }),
+    () => pos.addLine({ below: pointAboveUuid, above: pointBelowUuid }),
     { message: "I cannot create this relation, it will make loop!" }
   )
 })
