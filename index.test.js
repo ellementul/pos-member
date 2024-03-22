@@ -25,8 +25,9 @@ test('Create, Get and Delete Node', t => {
   provider.sendEvent({
     ...createEvent.create(),
     state: {
-      parents: [],
-      children: []
+      linesAbove: [],
+      linesBelow: [],
+      userdata: {}
     }
   })
   t.truthy(changedCallback.calledOnce)
@@ -40,14 +41,14 @@ test('Create, Get and Delete Node', t => {
     ...createEvent.create(),
     state: {
       userdata: { data: "TestingData" },
-      parents: [parentNode.uuid],
-      children: []
+      linesBelow: [parentNode.uuid],
+      linesAbove: []
     }
   })
   t.is(changedCallback.firstArg.state.length, 1)
   const childNode = changedCallback.firstArg.state[0]
   t.not(parentNode.uuid, childNode.uuid)
-  t.is(parentNode.uuid, childNode.parents[0])
+  t.is(parentNode.uuid, childNode.linesBelow[0])
 
   t.deepEqual(childNode.userdata, { data: "TestingData" })
 

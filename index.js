@@ -17,9 +17,9 @@ class POSMember extends Member {
     this.role = "POS"
   }
 
-  create({ userdata, parents, children }) {
+  create({ userdata, linesBelow, linesAbove }) {
     try {
-      const uuid =  this.pos.addNode({ userdata, parents, children })
+      const uuid =  this.pos.addPoint({ userdata, linesBelow, linesAbove })
       this.changed([uuid])
     } catch (err) {
       console.log(err)
@@ -27,7 +27,7 @@ class POSMember extends Member {
   }
 
   delete(uuid) {
-    this.pos.deleteNode(uuid)
+    this.pos.deletePoint(uuid)
     this.changed([], [uuid])
   }
 

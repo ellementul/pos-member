@@ -1,5 +1,12 @@
 import { EventFactory, Types } from '@ellementul/united-events-environment'
-import pointType from './types/index.js'
+
+const uuidsListType = Types.Array.Def(Types.UUID.Def(), 1024, true)
+
+const pointType = Types.Object.Def({
+  userdata: Types.Object.Def({}, true),
+  linesAbove: uuidsListType,
+  linesBelow: uuidsListType
+})
 
 const type = Types.Object.Def({
   system: "POS",
